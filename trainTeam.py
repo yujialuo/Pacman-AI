@@ -32,7 +32,7 @@ from util import nearestPoint
 #################
 
 def createTeam(firstIndex, secondIndex, isRed,
-               first = 'OffensiveReflexAgent', second = 'DefensiveReflexAgent'):
+               first = 'OffenseAgent', second = 'DefenseAgent'):
   """
   This function should return a list of two agents that will form the
   team, initialized using firstIndex and secondIndex as their agent
@@ -53,11 +53,12 @@ def createTeam(firstIndex, secondIndex, isRed,
 # Agents #
 ##########
 
-class ReflexCaptureAgent(CaptureAgent):
+class BaseAgent(CaptureAgent):
   """
   A base class for reflex agents that chooses score-maximizing actions
   """
- 
+  file = open("./weight.txt", "w")
+  stop = False
   def registerInitialState(self, gameState):
     self.start = gameState.getAgentPosition(self.index)
     CaptureAgent.registerInitialState(self, gameState)
@@ -89,10 +90,24 @@ class ReflexCaptureAgent(CaptureAgent):
       print actions, values
       print gameState
       print [self.getFeatures(gameState, a) for a in actions]
+      print [self.getWeights(gameState, a) for a in actions] #FIXME: weights are all NA
 
     random_action = random.choice(bestActions)
-    self.update_weight(gameState, random_action)
+    self.update(gameState, random_action, 0.0001)
     return random_action
+
+  # This is to update weight.txt
+  def update(self, gameState, action, error):
+    prev_weights = self.getWeights(gameState, action)
+    self.update_weight(gameState, action)
+    new_weights = self.getWeights(gameState, action)
+    for k in prev_weights:
+      if abs(prev_weights[k] - new_weights[k]) < error:
+        BaseAgent.stop = True
+    if not BaseAgent.stop:
+      BaseAgent.file.write(str(self.weights) + '\n')
+    else:
+      BaseAgent.file.close()
 
   def getSuccessor(self, gameState, action):
     """
@@ -139,7 +154,7 @@ class ReflexCaptureAgent(CaptureAgent):
     maxValue = max(values)
     return maxValue
 
-class OffensiveReflexAgent(ReflexCaptureAgent):
+class OffenseAgent(BaseAgent):
   """
   A reflex agent that seeks food. This is an agent
   we give you to get an idea of what an offensive agent might look like,
@@ -234,14 +249,15 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
     # How many food on us we haven't delivered back
     food_bearing = 20 - len(self.getFood(gameState).asList()) - self.getScore(gameState)
     if self.weights is None:
-      self.weights = {'successorScore': 100000,
-                      'distanceToFood': 1,
-                      'foodToEat': 10000,
-                      'minScoreDist': 2 * food_bearing,
-                      'distanceToGhost': 5 * (food_bearing + 1),
-                      'distanceToCapsules': 10,
-                      'isDeadEnd': 1,
-                      'distanceToPacman': 10}
+      self.weights = {'successorScore': 1,
+                      'distanceToFood': 0.01,
+                      'foodToEat': 0.1,
+                      'minScoreDist': (2.0 * food_bearing)/100.0,
+                      'distanceToGhost': (5.0 * (food_bearing + 1))/100.0,
+                      'distanceToCapsules': 0.01,
+                      'isDeadEnd': 0.001,
+                      'distanceToPacman': 0.01,
+                      'distanceToPartner': 0.001}
     return self.weights
 
   def update_weight(self, gameState, action):
@@ -274,7 +290,7 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
       weights[key] += 0.5 * diff * features[key]
     # print self.getWeights(gameState, action)
 
-class DefensiveReflexAgent(ReflexCaptureAgent):
+class DefenseAgent(BaseAgent):
   """
   A reflex agent that keeps its side Pacman-free. Again,
   this is to give you an idea of what a defensive agent
@@ -340,4 +356,4 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
     features = self.getFeatures(gameState, action)
     for key in self.getWeights(gameState, action).keys():
       self.getWeights(gameState, action)[key] = min(0.5 * diff * features[key] + self.getWeights(gameState, action)[key], -0.1)
-    print self.getWeights(gameState, action)
+    # print self.getWeights(gameState, action)

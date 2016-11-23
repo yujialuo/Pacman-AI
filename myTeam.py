@@ -71,30 +71,27 @@ class MyAgent(CaptureAgent):
     partner = gameState.getAgentState(partner_index)
     partnerPos = partner.getPosition()
     myPos = gameState.getAgentPosition(self.index)
+
+    ## Mode Utility Factor
     score = self.getScore(gameState)
-    upper_bound = 5 # Change this
+    upper_bound = 13 # Change this
     lower_bound = -1
     pac = [1 for i in oppoTeam if gameState.getAgentState(i).isPacman]
-    # more pacman, more defense
     if not pac:
         num_pac = 0
     else:
         num_pac = sum(pac)
 
-    if not num_pac:
+    ## Choose mode based on utility
+    if num_pac == 0 or score <= lower_bound: # All opponents are ghosts
         self.mode = "offense"
-    elif num_pac == 1:
+    elif num_pac == 2 or score >= upper_bound:
+        self.mode = "defense"
+    else:
         if myPos[0] > partnerPos[0]:
             self.mode = "offense"
         else:
             self.mode = "defense"
-    else:
-        self.mode = "defense"
-    # if score >= upper_bound: # Both defense
-    # elif score <= lower_bound: # Both offense
-    # else: # The closer-to-boundary one is offense, the other is defense
-
-
 
     # Choose Action
     actions = gameState.getLegalActions(self.index)
@@ -118,7 +115,7 @@ class MyAgent(CaptureAgent):
               action = a
           if score > alpha:
               alpha = score
-      print 'eval time for agent %d: %.4f' % (self.index, time.time() - start)
+      # print 'eval time for agent %d: %.4f' % (self.index, time.time() - start)
       return action
 
     # elif is_defense_minimax and self.mode == "defense":
@@ -154,12 +151,13 @@ class MyAgent(CaptureAgent):
                         bestAction = action
                         bestDist = dist
                 return bestAction
-                
-        return random.choice(bestActions)
+        action = random.choice(bestActions)
+        return action
 
   #####################
   # Feature & Weights #
   #####################
+  # if we become white, we go offense
   def getFeatures(self, gameState, action):
     features = util.Counter()
     successor = self.getSuccessor(gameState, action)
@@ -200,8 +198,8 @@ class MyAgent(CaptureAgent):
             min_dist_to_ghost = dist
       if self.capsule_time > 0: # Opponent is white ghost
           min_dist_to_ghost = 5
-      if myPos == successor.getInitialAgentPosition(self.index):
-          min_dist_to_ghost = -5 # We got eaten
+      # if myPos == successor.getInitialAgentPosition(self.index):
+      #     min_dist_to_ghost = -5 # We got eaten
       features['distanceToGhost'] = min_dist_to_ghost
 
 
@@ -238,8 +236,8 @@ class MyAgent(CaptureAgent):
       partner_index = [a for a in myTeam if a != self.index][0]
       partner = gameState.getAgentState(partner_index)
       partnerPos = partner.getPosition()
-      features['distanceToPartner'] = self.getMazeDistance(myPos, partnerPos)
-
+      dist_to_partner = self.getMazeDistance(myPos, partnerPos)
+      features['distanceToPartner'] = dist_to_partner**2
 
     # Defense
     else:
@@ -261,15 +259,15 @@ class MyAgent(CaptureAgent):
     if self.mode == "offense":
     # How many food on us we haven't delivered back
       food_bearing = 20 - len(self.getFood(gameState).asList()) - self.getScore(gameState)
-      return {'successorScore': 100000,
+      return {'successorScore': 10000,
               'distanceToFood': 1,
-              'foodToEat': 10000,
+              'foodToEat': 1000,
               'minScoreDist': 2 * food_bearing,
-              'distanceToGhost': 5000 * (food_bearing + 1),
+              'distanceToGhost': 500 * (food_bearing + 1),
               'distanceToCapsules': 10,
               'isDeadEnd': 10,
               'distanceToPacman': 10,
-              'distanceToPartner': 10}
+              'distanceToPartner': 0}
     else:
       return {'numInvaders': 1000,
               'invaderDistance': 10,
