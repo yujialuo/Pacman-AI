@@ -2,10 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="be6d2a7b-65fb-4af8-b3c1-fb5ae63c988b" name="Default" comment="">
-      <change type="MOVED" beforePath="$PROJECT_DIR$/rlTeam.py" afterPath="$PROJECT_DIR$/trainTeam.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/myTeam.py" afterPath="$PROJECT_DIR$/myTeam.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/score" afterPath="$PROJECT_DIR$/score" />
     </list>
     <ignored path="contest.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -25,24 +22,14 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="trainCapture.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/trainCapture.py">
+      <file leaf-file-name="myTeam.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/myTeam.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="376">
-              <caret line="1032" column="15" selection-start-line="1032" selection-start-column="15" selection-end-line="1032" selection-end-column="15" />
+            <state relative-caret-position="-5031">
+              <caret line="131" column="21" selection-start-line="131" selection-start-column="21" selection-end-line="131" selection-end-column="21" />
               <folding>
-                <element signature="e#2326#2356#0" expanded="true" />
+                <element signature="e#650#688#0" expanded="true" />
               </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="trainTeam.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/trainTeam.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="632">
-              <caret line="110" column="0" selection-start-line="110" selection-start-column="0" selection-end-line="110" selection-end-column="0" />
-              <folding />
             </state>
           </provider>
         </entry>
@@ -64,10 +51,10 @@
       <list>
         <option value="$PROJECT_DIR$/rlTeam.py" />
         <option value="$PROJECT_DIR$/capture.py" />
-        <option value="$PROJECT_DIR$/myTeam.py" />
         <option value="$PROJECT_DIR$/weight.txt" />
         <option value="$PROJECT_DIR$/trainCapture.py" />
         <option value="$PROJECT_DIR$/trainTeam.py" />
+        <option value="$PROJECT_DIR$/myTeam.py" />
       </list>
     </option>
   </component>
@@ -710,16 +697,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/myTeam.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="286">
-          <caret line="271" column="34" selection-start-line="271" selection-start-column="34" selection-end-line="271" selection-end-column="34" />
-          <folding>
-            <element signature="e#650#688#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file:///System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/random.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="216">
@@ -744,6 +721,16 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/trainCapture.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="376">
+          <caret line="1032" column="15" selection-start-line="1032" selection-start-column="15" selection-end-line="1032" selection-end-column="15" />
+          <folding>
+            <element signature="e#2326#2356#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/trainTeam.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="632">
@@ -752,12 +739,12 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/trainCapture.py">
+    <entry file="file://$PROJECT_DIR$/myTeam.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="376">
-          <caret line="1032" column="15" selection-start-line="1032" selection-start-column="15" selection-end-line="1032" selection-end-column="15" />
+        <state relative-caret-position="-5031">
+          <caret line="131" column="21" selection-start-line="131" selection-start-column="21" selection-end-line="131" selection-end-column="21" />
           <folding>
-            <element signature="e#2326#2356#0" expanded="true" />
+            <element signature="e#650#688#0" expanded="true" />
           </folding>
         </state>
       </provider>

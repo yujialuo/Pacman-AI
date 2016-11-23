@@ -71,8 +71,6 @@ class MyAgent(CaptureAgent):
     partner = gameState.getAgentState(partner_index)
     partnerPos = partner.getPosition()
     myPos = gameState.getAgentPosition(self.index)
-
-    ## Mode Utility Factor
     score = self.getScore(gameState)
     upper_bound = 13 # Change this
     lower_bound = -1
@@ -83,6 +81,7 @@ class MyAgent(CaptureAgent):
         num_pac = sum(pac)
 
     ## Choose mode based on utility
+    # FIXME: if we become white, we go offense
     if num_pac == 0 or score <= lower_bound: # All opponents are ghosts
         self.mode = "offense"
     elif num_pac == 2 or score >= upper_bound:
@@ -157,7 +156,6 @@ class MyAgent(CaptureAgent):
   #####################
   # Feature & Weights #
   #####################
-  # if we become white, we go offense
   def getFeatures(self, gameState, action):
     features = util.Counter()
     successor = self.getSuccessor(gameState, action)
@@ -274,6 +272,40 @@ class MyAgent(CaptureAgent):
               'stop': 100,
               'reverse': 2}
 
+  ####################
+  # Helper Functions #
+  ####################
+  def evaluate_minimax(self, gameState):
+      actions = gameState.getLegalActions(self.index)
+      values = [self.evaluate(gameState, a) for a in actions]
+      maxValue = max(values)
+      return maxValue
+
+  def getSuccessor(self, gameState, action):
+      """
+      Finds the next successor which is a grid position (location tuple).
+      """
+      successor = gameState.generateSuccessor(self.index, action)
+      pos = successor.getAgentState(self.index).getPosition()
+      if pos != nearestPoint(pos):
+          # Only half a grid position was covered
+          return successor.generateSuccessor(self.index, action)
+      else:
+          return successor
+
+  def evaluate(self, gameState, action):
+      """
+      Computes a linear combination of features and feature weights
+      """
+      features = self.getFeatures(gameState, action)
+      weights = self.getWeights(gameState, action)
+      return features * weights
+
+  def cutoffTest(self, gameState, depth):
+      if depth == 0 or gameState.isOver():
+          return True
+      return False
+
   #####################
   # Offensive MiniMax #
   #####################
@@ -316,78 +348,45 @@ class MyAgent(CaptureAgent):
         beta = min(beta, v)
     return v
 
-  def defenseValue(self, gameState, agentIndex, alpha, beta, depth, numAgents):
-      if self.cutoffTest(gameState, depth):
-        return self.evaluate_minimax(gameState)
+  # def defenseValue(self, gameState, agentIndex, alpha, beta, depth, numAgents):
+  #     if self.cutoffTest(gameState, depth):
+  #       return self.evaluate_minimax(gameState)
+  #
+  #     if agentIndex == self.index:
+  #       return self.defenseMax(gameState, agentIndex, alpha, beta, depth, numAgents)
+  #     elif gameState.isOnRedTeam(agentIndex) != gameState.isOnRedTeam(self.index) \
+  #             and gameState.getAgentPosition(agentIndex) != None \
+  #             and gameState.getAgentState(agentIndex).isPacman:
+  #       return self.defenseMin(gameState, agentIndex, alpha, beta, depth, numAgents)
+  #     else:
+  #       return self.defenseValue(gameState, (agentIndex + 1) % numAgents, alpha, beta, depth, numAgents)
+  #
+  # def defenseMax(self, gameState, agentIndex, alpha, beta, depth, numAgents):
+  #     v = -sys.maxint
+  #     for a in gameState.getLegalActions(agentIndex):
+  #       s = gameState.generateSuccessor(agentIndex, a)
+  #       v = max(v, self.defenseValue(s, ((agentIndex + 1) % numAgents), alpha, beta, depth - 1, numAgents))
+  #       if v >= beta:
+  #         return v
+  #       alpha = max(alpha, v)
+  #     return v
+  #
+  # def defenseMin(self, gameState, agentIndex, alpha, beta, depth, numAgents):
+  #     v = sys.maxint
+  #     past_dist = self.getMazeDistance(gameState.getAgentPosition(self.index), gameState.getAgentPosition(agentIndex))
+  #     for a in gameState.getLegalActions(agentIndex):
+  #       s = gameState.generateSuccessor(agentIndex, a)
+  #       # if self.getMazeDistance(s.getAgentPosition(self.index), gameState.getAgentPosition(self.index)) >= 2 and s.getAgentPosition(self.index) == s.getInitialAgentPosition(self.index):
+  #       #   return -sys.maxint
+  #       if self.getMazeDistance(s.getAgentPosition(self.index),
+  #                             s.getAgentPosition(agentIndex)) > past_dist or self.getMazeDistance(s.getAgentPosition(self.index),
+  #                             s.getAgentPosition(agentIndex)) <= 2:
+  #         v = min(v, self.defenseValue(s, ((agentIndex + 1) % numAgents), alpha, beta, depth - 1, numAgents))
+  #         if v <= alpha:
+  #           return v
+  #         beta = min(beta, v)
+  #     return v
 
-      if agentIndex == self.index:
-        return self.defenseMax(gameState, agentIndex, alpha, beta, depth, numAgents)
-      elif gameState.isOnRedTeam(agentIndex) != gameState.isOnRedTeam(self.index) \
-              and gameState.getAgentPosition(agentIndex) != None \
-              and gameState.getAgentState(agentIndex).isPacman:
-        return self.defenseMin(gameState, agentIndex, alpha, beta, depth, numAgents)
-      else:
-        return self.defenseValue(gameState, (agentIndex + 1) % numAgents, alpha, beta, depth, numAgents)
-
-  def defenseMax(self, gameState, agentIndex, alpha, beta, depth, numAgents):
-      v = -sys.maxint
-      for a in gameState.getLegalActions(agentIndex):
-        s = gameState.generateSuccessor(agentIndex, a)
-        v = max(v, self.defenseValue(s, ((agentIndex + 1) % numAgents), alpha, beta, depth - 1, numAgents))
-        if v >= beta:
-          return v
-        alpha = max(alpha, v)
-      return v
-
-  def defenseMin(self, gameState, agentIndex, alpha, beta, depth, numAgents):
-      v = sys.maxint
-      past_dist = self.getMazeDistance(gameState.getAgentPosition(self.index), gameState.getAgentPosition(agentIndex))
-      for a in gameState.getLegalActions(agentIndex):
-        s = gameState.generateSuccessor(agentIndex, a)
-        # if self.getMazeDistance(s.getAgentPosition(self.index), gameState.getAgentPosition(self.index)) >= 2 and s.getAgentPosition(self.index) == s.getInitialAgentPosition(self.index):
-        #   return -sys.maxint
-        if self.getMazeDistance(s.getAgentPosition(self.index),
-                              s.getAgentPosition(agentIndex)) > past_dist or self.getMazeDistance(s.getAgentPosition(self.index),
-                              s.getAgentPosition(agentIndex)) <= 2:
-          v = min(v, self.defenseValue(s, ((agentIndex + 1) % numAgents), alpha, beta, depth - 1, numAgents))
-          if v <= alpha:
-            return v
-          beta = min(beta, v)
-      return v
-
-  ####################
-  # Helper Functions #
-  ####################
-  def evaluate_minimax(self, gameState):
-    actions = gameState.getLegalActions(self.index)
-    values = [self.evaluate(gameState, a) for a in actions]
-    maxValue = max(values)
-    return maxValue
-
-  def getSuccessor(self, gameState, action):
-    """
-    Finds the next successor which is a grid position (location tuple).
-    """
-    successor = gameState.generateSuccessor(self.index, action)
-    pos = successor.getAgentState(self.index).getPosition()
-    if pos != nearestPoint(pos):
-      # Only half a grid position was covered
-      return successor.generateSuccessor(self.index, action)
-    else:
-      return successor
-
-  def evaluate(self, gameState, action):
-    """
-    Computes a linear combination of features and feature weights
-    """
-    features = self.getFeatures(gameState, action)
-    weights = self.getWeights(gameState, action)
-    return features * weights
-
-  def cutoffTest(self, gameState, depth):
-    if depth == 0 or gameState.isOver():
-      return True
-    return False
 
 
 
