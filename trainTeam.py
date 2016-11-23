@@ -86,11 +86,11 @@ class BaseAgent(CaptureAgent):
     maxValue = max(values)
     bestActions = [a for a, v in zip(actions, values) if v == maxValue]
 
-    if bestActions == []:
-      print actions, values
-      print gameState
-      print [self.getFeatures(gameState, a) for a in actions]
-      print [self.getWeights(gameState, a) for a in actions] #FIXME: weights are all NA
+    # if bestActions == []:
+    #   print actions, values
+    #   print gameState
+    #   print [self.getFeatures(gameState, a) for a in actions]
+    #   print [self.getWeights(gameState, a) for a in actions] #FIXME: weights are all NA
 
     random_action = random.choice(bestActions)
     self.update(gameState, random_action, 0.0001)
@@ -237,12 +237,12 @@ class OffenseAgent(BaseAgent):
     features['distanceToPacman'] = -dist_to_pacman
 
     # Distance to partner
-    # dist_to_partner = 0
-    # myTeam = self.getTeam(gameState)
-    # partner_index = [a for a in myTeam if a != self.index][0]
-    # partner = gameState.getAgentState(partner_index)
-    # partnerPos = partner.getPosition()
-    # features['distanceToPartner'] = self.getMazeDistance(myPos, partnerPos)
+    dist_to_partner = 0
+    myTeam = self.getTeam(gameState)
+    partner_index = [a for a in myTeam if a != self.index][0]
+    partner = gameState.getAgentState(partner_index)
+    partnerPos = partner.getPosition()
+    features['distanceToPartner'] = self.getMazeDistance(myPos, partnerPos)
     return features
 
   def getWeights(self, gameState, action):
@@ -285,9 +285,8 @@ class OffenseAgent(BaseAgent):
     diff = (reward + 0.8 * self.evaluate_minimax(state)) - self.evaluate(gameState, action)
     """update: weight[i] = weight[i] + alpha * difference * feature[i]"""
     features = self.getFeatures(gameState, action)
-    weights = self.getWeights(gameState, action)
-    for key in weights.keys():
-      weights[key] += 0.5 * diff * features[key]
+    for key in self.getWeights(gameState, action).keys():
+      self.getWeights(gameState, action)[key] = max(min(0.5 * diff * features[key] + self.getWeights(gameState, action)[key], 100), -100)
     # print self.getWeights(gameState, action)
 
 class DefenseAgent(BaseAgent):
@@ -355,5 +354,5 @@ class DefenseAgent(BaseAgent):
     """update: weight[i] = weight[i] + alpha * difference * feature[i]"""
     features = self.getFeatures(gameState, action)
     for key in self.getWeights(gameState, action).keys():
-      self.getWeights(gameState, action)[key] = min(0.5 * diff * features[key] + self.getWeights(gameState, action)[key], -0.1)
+      self.getWeights(gameState, action)[key] = max(min(0.5 * diff * features[key] + self.getWeights(gameState, action)[key], 100), -100)
     # print self.getWeights(gameState, action)
